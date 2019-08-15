@@ -56,6 +56,7 @@ class Payment {
             'MerchantLogin'  => $this->login,
             'InvId'          => null,
             'OutSum'         => 0,
+            'Receipt'        => '',
             'Desc'           => null,
             'SignatureValue' => '',
             'Encoding'       => 'utf-8',
@@ -88,11 +89,12 @@ class Payment {
             throw new InvalidInvoiceIdException();
         }
 
-        $signature = vsprintf('%s:%01.2f:%u:%s', [
+        $signature = vsprintf('%s:%01.2f:%u:%s:%s', [
             // '$login:$OutSum:$InvId:$passwordPayment'
             $this->login,
             $this->data['OutSum'],
             $this->data['InvId'],
+            $this->data['Receipt'],
             $this->paymentPassword
         ]);
 
@@ -148,10 +150,11 @@ class Payment {
 
         $password = $this->{$passwordType . 'Password'};
 
-        $signature = vsprintf('%s:%u:%s%s', [
+        $signature = vsprintf('%s:%u:%s:%s%s', [
             // '$OutSum:$InvId:$password[:$params]'
             $data['OutSum'],
             $data['InvId'],
+            $data['Receipt'],
             $password,
             $this->getCustomParamsString($this->data)
         ]);
@@ -201,6 +204,10 @@ class Payment {
         return 'OK' . $this->getInvoiceId() . "\n";
     }
 
+    /**
+     * @param  array $source
+     * @return string
+     */
     private function getCustomParamsString(array $source)
     {
         $params = [];
@@ -351,6 +358,18 @@ class Payment {
     {
         $this->data['Email'] = $email;
         
+        return $this;
+    }
+
+    /**
+     * @param  array $receipt
+     *
+     * @return Payment
+     */
+    public function setReceipt($receipt)
+    {
+        $this->data['Receipt'] = json_encode($receipt);
+
         return $this;
     }
     
