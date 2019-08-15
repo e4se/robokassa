@@ -97,13 +97,11 @@ class Payment {
             $this->data['Receipt'],
             $this->paymentPassword
         ]);
-
         if ($this->customParams) {
             // sort params alphabetically
             ksort($this->customParams);
             $signature .= ':' . implode(array_map(function($key, $value){ return $key . '=' .$value; }, array_keys($this->customParams), $this->customParams), ':');
         }
-
         $this->data['SignatureValue'] = md5($signature);
 
         $data   = http_build_query($this->data, null, '&');
@@ -150,11 +148,10 @@ class Payment {
 
         $password = $this->{$passwordType . 'Password'};
 
-        $signature = vsprintf('%s:%u:%s:%s%s', [
+        $signature = vsprintf('%s:%u:%s%s', [
             // '$OutSum:$InvId:$password[:$params]'
             $data['OutSum'],
             $data['InvId'],
-            $data['Receipt'],
             $password,
             $this->getCustomParamsString($this->data)
         ]);
@@ -368,7 +365,7 @@ class Payment {
      */
     public function setReceipt($receipt)
     {
-        $this->data['Receipt'] = json_encode($receipt);
+        $this->data['Receipt'] = urlencode(json_encode($receipt));
 
         return $this;
     }
